@@ -14,6 +14,7 @@ from webviz_config.common_cache import CACHE
 from webviz_config import WebvizPluginABC
 from webviz_config.utils import calculate_slider_step
 import statsmodels.formula.api as smf
+import statsmodels.api as sm
 from sklearn.preprocessing import PolynomialFeatures
 from dash_table import DataTable
 from dash_table.Format import Format
@@ -387,7 +388,7 @@ class MultipleRegressionJostein(WebvizPluginABC):
                 
                 df = pd.merge(responsedf, paramdf, on=["REAL"]).drop(columns=["REAL", "ENSEMBLE"])
                 model = gen_model(df, response, nvars, interaction)
-                
+                print(sm.stats.anova_lm(model,typ=2))
                 table = model.summary2().tables[1]
                 table.index.name = "Parameter"
                 table.reset_index(inplace=True)
@@ -398,7 +399,7 @@ class MultipleRegressionJostein(WebvizPluginABC):
                     "format": Format(precision=4)} for i in table.columns]
                 data = list(table.to_dict("index").values())
                 pval_plot = make_p_values_plot(model)
-                print(pval_plot)
+                
                 return (
                     pval_plot,
                     data,
@@ -689,3 +690,4 @@ def gen_column_names(df, interaction_only):
                 if (f"{colname1}:{colname2}" not in output) and (f"{colname2}:{colname1}" not in output):
                     output.append(f"{colname1}:{colname2}")
     return output
+
